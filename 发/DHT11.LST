@@ -1,0 +1,240 @@
+C51 COMPILER V9.54   DHT11                                                                 11/26/2020 13:23:32 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE DHT11
+OBJECT MODULE PLACED IN DHT11.OBJ
+COMPILER INVOKED BY: D:\keilARM\C51\BIN\C51.EXE DHT11.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\51_DHT11 - 副本) DEBUG OBJECT
+                    -EXTEND TABS(2)
+
+line level    source
+
+   1          #include "dht11.h"
+   2          
+   3          
+   4          void DHT11_delay_us(uchar n)
+   5          
+   6          {
+   7   1      
+   8   1          while(--n);
+   9   1      
+  10   1      }
+  11          
+  12          
+  13          void DHT11_delay_ms(uint z)
+  14          
+  15          {
+  16   1      
+  17   1         uint i,j;
+  18   1      
+  19   1         for(i=z;i>0;i--)
+  20   1      
+  21   1            for(j=110;j>0;j--);
+  22   1      
+  23   1      }
+  24          
+  25          
+  26          void DHT11_start()
+  27          {
+  28   1      
+  29   1         Data=1;
+  30   1      
+  31   1         DHT11_delay_us(2);
+  32   1      
+  33   1         Data=0;
+  34   1      
+  35   1         DHT11_delay_ms(30);   //延时18ms以上
+  36   1      
+  37   1         Data=1;
+  38   1      
+  39   1         DHT11_delay_us(30);
+  40   1      
+  41   1      }
+  42          
+  43          void DHT11_start_1()
+  44          {
+  45   1      
+  46   1         Data_1=1;
+  47   1      
+  48   1         DHT11_delay_us(2);
+  49   1      
+  50   1         Data_1=0;
+  51   1      
+  52   1         DHT11_delay_ms(30);   //延时18ms以上
+  53   1      
+  54   1         Data_1=1;
+C51 COMPILER V9.54   DHT11                                                                 11/26/2020 13:23:32 PAGE 2   
+
+  55   1      
+  56   1         DHT11_delay_us(30);
+  57   1      
+  58   1      }
+  59          
+  60          
+  61          uchar DHT11_rec_byte()      //接收一个字节
+  62          {
+  63   1      
+  64   1         uchar i,dat=0;
+  65   1      
+  66   1        for(i=0;i<8;i++)    //从高到低依次接收8位数据
+  67   1      
+  68   1         {          
+  69   2      
+  70   2            while(!Data);   ////等待50us低电平过去
+  71   2      
+  72   2            DHT11_delay_us(8);     //延时60us，如果还为高则数据为1，否则为0 
+  73   2      
+  74   2            dat<<=1;           //移位使正确接收8位数据，数据为0时直接移位
+  75   2      
+  76   2            if(Data==1)    //数据为1时，使dat加1来接收数据1
+  77   2      
+  78   2               dat+=1;
+  79   2      
+  80   2            while(Data);  //等待数据线拉低    
+  81   2      
+  82   2          }  
+  83   1      
+  84   1          return dat;
+  85   1      
+  86   1      }
+  87          
+  88          uchar DHT11_rec_byte_1()      //接收一个字节
+  89          {
+  90   1      
+  91   1         uchar i,dat=0;
+  92   1      
+  93   1        for(i=0;i<8;i++)    //从高到低依次接收8位数据
+  94   1      
+  95   1         {          
+  96   2      
+  97   2            while(!Data_1);   ////等待50us低电平过去
+  98   2      
+  99   2            DHT11_delay_us(8);     //延时60us，如果还为高则数据为1，否则为0 
+ 100   2      
+ 101   2            dat<<=1;           //移位使正确接收8位数据，数据为0时直接移位
+ 102   2      
+ 103   2            if(Data_1==1)    //数据为1时，使dat加1来接收数据1
+ 104   2      
+ 105   2               dat+=1;
+ 106   2      
+ 107   2            while(Data_1);  //等待数据线拉低    
+ 108   2      
+ 109   2          }  
+ 110   1      
+ 111   1          return dat;
+ 112   1      
+ 113   1      }
+ 114          
+ 115          
+ 116          
+C51 COMPILER V9.54   DHT11                                                                 11/26/2020 13:23:32 PAGE 3   
+
+ 117          void DHT11_receive(uchar *temp,uchar *humi)      //接收40位的数据
+ 118          {
+ 119   1      
+ 120   1          uchar R_H,R_L,T_H,T_L,RH,RL,TH,TL,revise; 
+ 121   1      
+ 122   1          DHT11_start();
+ 123   1      
+ 124   1          if(Data==0)
+ 125   1      
+ 126   1          {
+ 127   2      
+ 128   2              while(Data==0);   //等待拉高     
+ 129   2      
+ 130   2              DHT11_delay_us(40);  //拉高后延时80us
+ 131   2      
+ 132   2              R_H=DHT11_rec_byte();    //接收湿度高八位  
+ 133   2      
+ 134   2              R_L=DHT11_rec_byte();    //接收湿度低八位  
+ 135   2      
+ 136   2              T_H=DHT11_rec_byte();    //接收温度高八位  
+ 137   2      
+ 138   2              T_L=DHT11_rec_byte();    //接收温度低八位
+ 139   2      
+ 140   2              revise=DHT11_rec_byte(); //接收校正位
+ 141   2      
+ 142   2      
+ 143   2              DHT11_delay_us(25);    //结束
+ 144   2      
+ 145   2      
+ 146   2              if((R_H+R_L+T_H+T_L)==revise)      //校正
+ 147   2      
+ 148   2              {
+ 149   3      
+ 150   3                  RH=R_H;
+ 151   3      
+ 152   3                  RL=R_L;
+ 153   3      
+ 154   3                  TH=T_H;
+ 155   3      
+ 156   3                  TL=T_L;
+ 157   3                  *temp=TH;
+ 158   3            *humi=RH;
+ 159   3              }
+ 160   2              
+ 161   2            }
+ 162   1      }
+ 163          
+ 164          void DHT11_receive_1(uchar *temp,uchar *humi)      //接收40位的数据
+ 165          {
+ 166   1      
+ 167   1          uchar R_H,R_L,T_H,T_L,RH,RL,TH,TL,revise; 
+ 168   1      
+ 169   1          DHT11_start_1();
+ 170   1      
+ 171   1          if(Data_1==0)
+ 172   1      
+ 173   1          {
+ 174   2      
+ 175   2              while(Data_1==0);   //等待拉高     
+ 176   2      
+ 177   2              DHT11_delay_us(40);  //拉高后延时80us
+ 178   2      
+C51 COMPILER V9.54   DHT11                                                                 11/26/2020 13:23:32 PAGE 4   
+
+ 179   2              R_H=DHT11_rec_byte_1();    //接收湿度高八位  
+ 180   2      
+ 181   2              R_L=DHT11_rec_byte_1();    //接收湿度低八位  
+ 182   2      
+ 183   2              T_H=DHT11_rec_byte_1();    //接收温度高八位  
+ 184   2      
+ 185   2              T_L=DHT11_rec_byte_1();    //接收温度低八位
+ 186   2      
+ 187   2              revise=DHT11_rec_byte_1(); //接收校正位
+ 188   2      
+ 189   2      
+ 190   2              DHT11_delay_us(25);    //结束
+ 191   2      
+ 192   2      
+ 193   2              if((R_H+R_L+T_H+T_L)==revise)      //校正
+ 194   2      
+ 195   2              {
+ 196   3      
+ 197   3                  RH=R_H;
+ 198   3      
+ 199   3                  RL=R_L;
+ 200   3      
+ 201   3                  TH=T_H;
+ 202   3      
+ 203   3                  TL=T_L;
+ 204   3                  *temp=TH;
+ 205   3                  *humi=RH;
+ 206   3              }
+ 207   2              
+ 208   2            }
+ 209   1      }
+ 210          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    363    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      20
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

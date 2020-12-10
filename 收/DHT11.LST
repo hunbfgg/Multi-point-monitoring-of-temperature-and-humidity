@@ -1,0 +1,146 @@
+C51 COMPILER V9.54   DHT11                                                                 11/26/2020 13:42:29 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE DHT11
+OBJECT MODULE PLACED IN DHT11.OBJ
+COMPILER INVOKED BY: D:\keilARM\C51\BIN\C51.EXE DHT11.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "dht11.h"
+   2          
+   3          
+   4          void DHT11_delay_us(uchar n)
+   5          
+   6          {
+   7   1      
+   8   1          while(--n);
+   9   1      
+  10   1      }
+  11          
+  12          
+  13          void DHT11_delay_ms(uint z)
+  14          
+  15          {
+  16   1      
+  17   1         uint i,j;
+  18   1      
+  19   1         for(i=z;i>0;i--)
+  20   1      
+  21   1            for(j=110;j>0;j--);
+  22   1      
+  23   1      }
+  24          
+  25          
+  26          void DHT11_start()
+  27          
+  28          {
+  29   1      
+  30   1         Data=1;
+  31   1      
+  32   1         DHT11_delay_us(2);
+  33   1      
+  34   1         Data=0;
+  35   1      
+  36   1         DHT11_delay_ms(30);   //延时18ms以上
+  37   1      
+  38   1         Data=1;
+  39   1      
+  40   1         DHT11_delay_us(30);
+  41   1      
+  42   1      }
+  43          
+  44          
+  45          uchar DHT11_rec_byte()      //接收一个字节
+  46          
+  47          {
+  48   1      
+  49   1         uchar i,dat=0;
+  50   1      
+  51   1        for(i=0;i<8;i++)    //从高到低依次接收8位数据
+  52   1      
+  53   1         {          
+  54   2      
+  55   2            while(!Data);   ////等待50us低电平过去
+C51 COMPILER V9.54   DHT11                                                                 11/26/2020 13:42:29 PAGE 2   
+
+  56   2      
+  57   2            DHT11_delay_us(8);     //延时60us，如果还为高则数据为1，否则为0 
+  58   2      
+  59   2            dat<<=1;           //移位使正确接收8位数据，数据为0时直接移位
+  60   2      
+  61   2            if(Data==1)    //数据为1时，使dat加1来接收数据1
+  62   2      
+  63   2               dat+=1;
+  64   2      
+  65   2            while(Data);  //等待数据线拉低    
+  66   2      
+  67   2          }  
+  68   1      
+  69   1          return dat;
+  70   1      
+  71   1      }
+  72          
+  73          void DHT11_receive(uchar *temp,uchar *humi)      //接收40位的数据
+  74          
+  75          {
+  76   1      
+  77   1          uchar R_H,R_L,T_H,T_L,RH,RL,TH,TL,revise; 
+  78   1      
+  79   1          DHT11_start();
+  80   1      
+  81   1          if(Data==0)
+  82   1      
+  83   1          {
+  84   2      
+  85   2              while(Data==0);   //等待拉高     
+  86   2      
+  87   2              DHT11_delay_us(40);  //拉高后延时80us
+  88   2      
+  89   2              R_H=DHT11_rec_byte();    //接收湿度高八位  
+  90   2      
+  91   2              R_L=DHT11_rec_byte();    //接收湿度低八位  
+  92   2      
+  93   2              T_H=DHT11_rec_byte();    //接收温度高八位  
+  94   2      
+  95   2              T_L=DHT11_rec_byte();    //接收温度低八位
+  96   2      
+  97   2              revise=DHT11_rec_byte(); //接收校正位
+  98   2      
+  99   2      
+ 100   2              DHT11_delay_us(25);    //结束
+ 101   2      
+ 102   2      
+ 103   2              if((R_H+R_L+T_H+T_L)==revise)      //校正
+ 104   2      
+ 105   2              {
+ 106   3      
+ 107   3                  RH=R_H;
+ 108   3      
+ 109   3                  RL=R_L;
+ 110   3      
+ 111   3                  TH=T_H;
+ 112   3      
+ 113   3                  TL=T_L;
+ 114   3                  *temp=TH;
+ 115   3            *humi=RH;
+ 116   3              }
+ 117   2              
+C51 COMPILER V9.54   DHT11                                                                 11/26/2020 13:42:29 PAGE 3   
+
+ 118   2            }
+ 119   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    224    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----      10
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

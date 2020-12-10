@@ -1,0 +1,6 @@
+"51_DHT21.obj",
+"nRF24L01.obj",
+"lcd.obj",
+"DHT11.obj" 
+TO "51_DHT11" 
+RAMSIZE(256) 
